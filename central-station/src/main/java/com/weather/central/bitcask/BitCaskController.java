@@ -26,11 +26,7 @@ public class BitCaskController {
     // GET /bitcask/all
     @GetMapping("/all")
     public Map<String, String> getAll() throws IOException {
-        Map<String, String> result = new LinkedHashMap<>();
-        for (String key : bitCask.keys()) {
-            result.put(key, bitCask.get(key));
-        }
-        return result;
+        return bitCask.getAll();
     }
 
     // GET /bitcask/keys
