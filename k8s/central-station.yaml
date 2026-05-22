@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: central-station
+  namespace: weather-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: central-station
+  template:
+    metadata:
+      labels:
+        app: central-station
+    spec:
+      containers:
+        - name: central-station
+          image: central-station:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: KAFKA_BOOTSTRAP
+              value: "kafka:9092"
+            - name: BITCASK_DIR
+              value: "/data/bitcask"
+            - name: PARQUET_DIR
+              value: "/data/parquet"
+          volumeMounts:
+            - name: weather-storage
+              mountPath: /data
+          resources:
+            requests:
+              memory: "512Mi"
+            limits:
+              memory: "1Gi"
+      volumes:
+        - name: weather-storage
+          persistentVolumeClaim:
+            claimName: weather-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: central-station
+  namespace: weather-monitoring
+spec:
+  type: NodePort
+  selector:
+    app: central-station
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30080
