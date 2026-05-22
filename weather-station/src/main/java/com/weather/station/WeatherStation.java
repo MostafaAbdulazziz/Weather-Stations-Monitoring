@@ -43,6 +43,7 @@ public class WeatherStation {
         long sequenceNumber = 0;
 
         try (KafkaProducer<String, String> producer = new KafkaProducer<>(props)) {
+            System.out.println("Producer initialized. Starting to send messages...");
             while (true) {
                 sequenceNumber++;
 
@@ -83,7 +84,10 @@ public class WeatherStation {
 
                 Thread.sleep(1000);
             }
-        }
+        }catch (Exception e)
+            {
+                System.err.println("Producer error: " + e.getMessage());
+            }
     }
 
     // 30% low, 40% medium, 30% high
