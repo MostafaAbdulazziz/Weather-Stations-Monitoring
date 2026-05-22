@@ -73,7 +73,7 @@ public class WeatherConsumer implements Runnable {
                 }
             }
         } finally {
-            try { archiver.flush(); } catch (Exception ignored) {}
+            try { archiver.close(); } catch (Exception ignored) {}
             consumer.close();
         }
     }
