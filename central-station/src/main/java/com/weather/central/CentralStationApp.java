@@ -17,10 +17,10 @@ import java.io.IOException;
 public class CentralStationApp {
 
     // Read from env var, fall back to a local folder under home
-    @Value("${BITCASK_DIR:#{systemProperties['user.home'] + '/weather-data/bitcask'}}")
+    @Value("${BITCASK_DIR:#{systemProperties['user.home'] + '/weather-monitoring/bitcask'}}")
     private String bitcaskDir;
 
-    @Value("${PARQUET_DIR:#{systemProperties['user.home'] + '/weather-data/parquet'}}")
+    @Value("${PARQUET_DIR:#{systemProperties['user.home'] + '/weather-monitoring/parquet'}}")
     private String parquetDir;
 
     @Value("${KAFKA_BOOTSTRAP:localhost:9092}")

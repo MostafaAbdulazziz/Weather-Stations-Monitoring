@@ -20,16 +20,13 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ParquetArchiver {
 
     private static final int DEFAULT_BATCH_SIZE = Integer.parseInt(
-            System.getenv().getOrDefault("PARQUET_BATCH_SIZE", "10000"));
+            System.getenv().getOrDefault("PARQUET_BATCH_SIZE", "100"));
     private static final long DEFAULT_FLUSH_INTERVAL_MS = Long.parseLong(
-            System.getenv().getOrDefault("PARQUET_FLUSH_MS", "5000"));
+            System.getenv().getOrDefault("PARQUET_FLUSH_MS", "500"));
     private static final int DEFAULT_QUEUE_CAPACITY = Integer.parseInt(
             System.getenv().getOrDefault("PARQUET_QUEUE_CAPACITY", "50000"));
-    private static final String BASE_DIR;
+    private String BASE_DIR=BASE_DIR = System.getenv().getOrDefault("PARQUET_DIR", "/data");;
 
-    static {
-        BASE_DIR = System.getenv().getOrDefault("PARQUET_DIR", "/data/parquet");
-    }
 
     // Schema definition
     private static final String SCHEMA_JSON = """
@@ -48,14 +45,14 @@ public class ParquetArchiver {
         }
         """;
 
-    private final Schema schema = new Schema.Parser().parse(SCHEMA_JSON);
-    private final BlockingQueue<WeatherMessage> queue;
-    private final List<WeatherMessage> buffer;
-    private final Thread worker;
-    private final AtomicBoolean running = new AtomicBoolean(true);
-    private final ReentrantLock flushLock = new ReentrantLock();
-    private final int batchSize;
-    private final long flushIntervalMs;
+    private  Schema schema = new Schema.Parser().parse(SCHEMA_JSON);
+    private  BlockingQueue<WeatherMessage> queue;
+    private  List<WeatherMessage> buffer;
+    private  Thread worker;
+    private  AtomicBoolean running = new AtomicBoolean(true);
+    private  ReentrantLock flushLock = new ReentrantLock();
+    private  int batchSize;
+    private  long flushIntervalMs;
 
     public ParquetArchiver() {
         this(DEFAULT_BATCH_SIZE, DEFAULT_FLUSH_INTERVAL_MS, DEFAULT_QUEUE_CAPACITY);
@@ -77,6 +74,10 @@ public class ParquetArchiver {
         this.worker.setDaemon(true);
         this.worker.start();
     }
+    public ParquetArchiver(String BASE_DIR) {
+        this.BASE_DIR = BASE_DIR;
+    }
+
 
     public void archive(WeatherMessage msg) throws IOException {
         if (!running.get()) {
