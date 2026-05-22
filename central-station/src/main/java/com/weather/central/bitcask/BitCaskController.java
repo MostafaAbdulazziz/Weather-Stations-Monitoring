@@ -14,7 +14,7 @@ public class BitCaskController {
     private BitCask bitCask;
 
     @GetMapping("/get")
-    public ResponseEntity<Map<String, String>> get(@RequestParam String key) {
+    public ResponseEntity<Map<String, String>> get(@RequestParam("key") String key) {
         Map<String, String> result = new LinkedHashMap<>();
         try {
             String value = bitCask.get(key);

@@ -25,7 +25,7 @@ public class ParquetArchiver {
             System.getenv().getOrDefault("PARQUET_FLUSH_MS", "500"));
     private static final int DEFAULT_QUEUE_CAPACITY = Integer.parseInt(
             System.getenv().getOrDefault("PARQUET_QUEUE_CAPACITY", "50000"));
-    private String BASE_DIR=BASE_DIR = System.getenv().getOrDefault("PARQUET_DIR", "/data");;
+//    private String BASE_DIR=BASE_DIR = System.getenv().getOrDefault("PARQUET_DIR", "/data");;
 
 
     // Schema definition
@@ -54,11 +54,24 @@ public class ParquetArchiver {
     private  int batchSize;
     private  long flushIntervalMs;
 
+    private String BASE_DIR;
+
+    // 1. Default constructor
     public ParquetArchiver() {
-        this(DEFAULT_BATCH_SIZE, DEFAULT_FLUSH_INTERVAL_MS, DEFAULT_QUEUE_CAPACITY);
+        this(System.getenv().getOrDefault("PARQUET_DIR", "/data"),
+                DEFAULT_BATCH_SIZE,
+                DEFAULT_FLUSH_INTERVAL_MS,
+                DEFAULT_QUEUE_CAPACITY);
     }
 
-    public ParquetArchiver(int batchSize, long flushIntervalMs, int queueCapacity) {
+    // 2. Directory-only constructor (This is the one your Main app is likely using)
+    public ParquetArchiver(String baseDir) {
+        this(baseDir, DEFAULT_BATCH_SIZE, DEFAULT_FLUSH_INTERVAL_MS, DEFAULT_QUEUE_CAPACITY);
+    }
+
+    // 3. Master constructor where everything is actually initialized
+    public ParquetArchiver(String baseDir, int batchSize, long flushIntervalMs, int queueCapacity) {
+        this.BASE_DIR = baseDir;
         this.batchSize = batchSize;
         this.flushIntervalMs = flushIntervalMs;
         this.queue = new ArrayBlockingQueue<>(queueCapacity);
@@ -73,9 +86,6 @@ public class ParquetArchiver {
         this.worker = new Thread(this::runWriter, "parquet-archiver");
         this.worker.setDaemon(true);
         this.worker.start();
-    }
-    public ParquetArchiver(String BASE_DIR) {
-        this.BASE_DIR = BASE_DIR;
     }
 
 
