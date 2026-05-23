@@ -3,11 +3,11 @@
 Generated: 2026-05-23 10:10:11
 
 ## Deliverables Summary
-- Source Code: `/home/aboelanwar/Weather-Stations-Monitoring/central-station` and `/home/aboelanwar/Weather-Stations-Monitoring/weather-station`
+- Source Code: `Weather-Stations-Monitoring/central-station` and `Weather-Stations-Monitoring/weather-station`
 - Dockerfiles:
-  - `/home/aboelanwar/Weather-Stations-Monitoring/central-station/Dockerfile`
-  - `/home/aboelanwar/Weather-Stations-Monitoring/weather-station/Dockerfile`
-- Kubernetes YAMLs (in `/home/aboelanwar/Weather-Stations-Monitoring/k8s`):
+  - `Weather-Stations-Monitoring/central-station/Dockerfile`
+  - `Weather-Stations-Monitoring/weather-station/Dockerfile`
+- Kubernetes YAMLs (in `Weather-Stations-Monitoring/k8s`):
   - `central-station.yaml`
   - `elastic-kibana.yaml`
   - `kafka.yaml`
@@ -15,7 +15,7 @@ Generated: 2026-05-23 10:10:11
   - `storage.yaml`
   - `weather-stations.yaml`
   - `zookeeper.yaml`
-- Report: `/home/aboelanwar/Weather-Stations-Monitoring/report.md`
+- Report: `Weather-Stations-Monitoring/report.md`
 
 ## BitCask Keys
 
