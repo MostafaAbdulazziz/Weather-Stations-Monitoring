@@ -25,8 +25,8 @@ public class OpenMeteoChannelAdapter {
     private static final Random random = new Random();
 
     // Configurable coordinates (Defaults to Alexandria, Egypt)
-    private static final double LATITUDE = 31.2001;
-    private static final double LONGITUDE = 29.9187;
+    private static final double LATITUDE = Double.parseDouble(System.getenv().getOrDefault("LATITUDE", "31.2001"));;
+    private static final double LONGITUDE = Double.parseDouble(System.getenv().getOrDefault("LONGITUDE", "29.9187"));
 
     // Dynamically inject coordinates into the API URL
     private static final String OPEN_METEO_URL = String.format(
