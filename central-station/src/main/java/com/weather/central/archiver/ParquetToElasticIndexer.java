@@ -62,13 +62,13 @@ public class ParquetToElasticIndexer {
             GenericRecord record;
             while ((record = reader.read()) != null) {
                 Map<String, Object> doc = new LinkedHashMap<>();
-                doc.put("station_id", ((Number) record.get("station_id")).longValue());
-                doc.put("s_no", ((Number) record.get("s_no")).longValue());
-                doc.put("battery_status", record.get("battery_status").toString());
-                doc.put("status_timestamp", ((Number) record.get("status_timestamp")).longValue());
-                doc.put("humidity", ((Number) record.get("humidity")).intValue());
-                doc.put("temperature", ((Number) record.get("temperature")).intValue());
-                doc.put("wind_speed", ((Number) record.get("wind_speed")).intValue());
+                for (org.apache.avro.Schema.Field field : record.getSchema().getFields()) {
+                    Object value = record.get(field.name());
+                    if (value instanceof org.apache.avro.util.Utf8) {
+                        value = value.toString();
+                    }
+                    doc.put(field.name(), value);
+                }
 
                 bulkLines.add("{\"index\":{\"_index\":\"" + index + "\"}}");
                 bulkLines.add(mapper.writeValueAsString(doc));
@@ -112,4 +112,3 @@ public class ParquetToElasticIndexer {
         return params;
     }
 }
-

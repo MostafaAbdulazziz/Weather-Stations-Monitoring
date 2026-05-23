@@ -2,6 +2,8 @@ package com.weather.central.consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.weather.central.WeatherMessage;
+import com.weather.central.archiver.DropEvent;
+import com.weather.central.archiver.DropParquetArchiver;
 import com.weather.central.archiver.ParquetArchiver;
 import com.weather.central.bitcask.BitCask;
 import org.apache.kafka.clients.consumer.*;
@@ -14,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class WeatherConsumer {
 
@@ -33,6 +36,7 @@ public class WeatherConsumer {
 
     private final BitCask bitCask;
     private final ParquetArchiver archiver;
+    private final DropParquetArchiver dropArchiver;
     private final ObjectMapper mapper = new ObjectMapper();
     private final String kafkaBootstrap;
 
@@ -48,9 +52,11 @@ public class WeatherConsumer {
 
     public WeatherConsumer(BitCask bitCask,
                            ParquetArchiver archiver,
+                           DropParquetArchiver dropArchiver,
                            String kafkaBootstrap) {
         this.bitCask = bitCask;
         this.archiver = archiver;
+        this.dropArchiver = dropArchiver;
         this.kafkaBootstrap = kafkaBootstrap;
     }
 
@@ -105,7 +111,11 @@ public class WeatherConsumer {
             e.printStackTrace();
         } finally {
             try {
-                archiver.flush();
+                archiver.close();
+            } catch (Exception ignored) {
+            }
+            try {
+                dropArchiver.close();
             } catch (Exception ignored) {
             }
             consumer.close();
@@ -138,6 +148,14 @@ public class WeatherConsumer {
                 long gap = msg.getS_no() - lastSno - 1;
                 if (gap > 0) {
                     droppedPerStation.get(stationId).addAndGet(gap);
+                    DropEvent dropEvent = new DropEvent(
+                            stationId,
+                            lastSno + 1,
+                            msg.getS_no() - 1,
+                            (int) gap,
+                            msg.getStatus_timestamp()
+                    );
+                    dropArchiver.archive(dropEvent);
                     log("WARN", "STATION-" + stationId,
                             "Detected " + gap + " dropped message(s) "
                                     + "[last=" + lastSno

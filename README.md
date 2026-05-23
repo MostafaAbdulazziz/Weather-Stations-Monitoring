@@ -16,29 +16,31 @@ You can override the API endpoint using `BASE_URL`.
 BASE_URL="http://localhost:8080/bitcask" ./bitcask_client.sh --view-all
 ```
 
-## Parquet Archiving
+## Drop Parquet Archiving
 
-The central station batches weather messages and writes them to parquet files partitioned by
-`date`, `hour`, and `station`. Defaults are tuned for larger batch sizes to reduce IO.
+When sequence gaps are detected per station, drop events are written to parquet so you can
+count dropped messages per station in Elasticsearch/Kibana.
 
 Environment variables:
-- `PARQUET_DIR` (default `/data/parquet`)
-- `PARQUET_BATCH_SIZE` (default `10000`)
-- `PARQUET_FLUSH_MS` (default `5000`)
-- `PARQUET_QUEUE_CAPACITY` (default `50000`)
+- `DROP_PARQUET_DIR` (default `/data/parquet_drops`)
+- `DROP_PARQUET_BATCH_SIZE` (default `10000`)
+- `DROP_PARQUET_FLUSH_MS` (default `5000`)
+- `DROP_PARQUET_QUEUE_CAPACITY` (default `50000`)
 
 ## Parquet to Elasticsearch Indexer
 
-To index parquet files into Elasticsearch for Kibana analysis, use the indexer tool:
+The indexer is schema-agnostic and can index both weather and drop parquet datasets.
 
 ```bash
 mvn -q -f central-station/pom.xml -DskipTests \
   exec:java -Dexec.mainClass=com.weather.central.archiver.ParquetToElasticIndexer \
   -Dexec.args="--parquet-dir=/data/parquet --es-url=http://localhost:9200 --index=weather-status"
+
+mvn -q -f central-station/pom.xml -DskipTests \
+  exec:java -Dexec.mainClass=com.weather.central.archiver.ParquetToElasticIndexer \
+  -Dexec.args="--parquet-dir=/data/parquet_drops --es-url=http://localhost:9200 --index=weather-drops"
 ```
 
-Supported arguments:
-- `--parquet-dir=/path/to/parquet`
-- `--es-url=http://localhost:9200`
-- `--index=weather-status`
-- `--batch-size=1000`
+Kibana example aggregations:
+- `weather-status`: filter `battery_status = low`, then bucket by `station_id`.
+- `weather-drops`: sum `dropped_count`, then bucket by `station_id`.
