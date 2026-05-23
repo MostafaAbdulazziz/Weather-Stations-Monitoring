@@ -4,3 +4,7 @@ target/
 *.iml
 *.log
 .idea/
+
+# Local binaries
+kubectl
+minikube-linux-amd64
