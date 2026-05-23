@@ -25,8 +25,8 @@ public class ParquetArchiver {
             System.getenv().getOrDefault("PARQUET_FLUSH_MS", "500"));
     private static final int DEFAULT_QUEUE_CAPACITY = Integer.parseInt(
             System.getenv().getOrDefault("PARQUET_QUEUE_CAPACITY", "50000"));
-//    private String BASE_DIR=BASE_DIR = System.getenv().getOrDefault("PARQUET_DIR", "/data");;
 
+    private static final CompressionCodecName DEFAULT_CODEC = resolveCodec();
 
     // Schema definition
     private static final String SCHEMA_JSON = """
@@ -200,7 +200,7 @@ public class ParquetArchiver {
                 .<GenericRecord>builder(path)
                 .withSchema(schema)
                 .withConf(conf)
-                .withCompressionCodec(CompressionCodecName.SNAPPY)
+                .withCompressionCodec(DEFAULT_CODEC)
                 .build()) {
 
             for (WeatherMessage m : records) {
@@ -214,6 +214,15 @@ public class ParquetArchiver {
                 record.put("wind_speed", m.getWeather().getWind_speed());
                 writer.write(record);
             }
+        }
+    }
+
+    private static CompressionCodecName resolveCodec() {
+        String raw = System.getenv().getOrDefault("PARQUET_CODEC", "UNCOMPRESSED");
+        try {
+            return CompressionCodecName.valueOf(raw.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            return CompressionCodecName.UNCOMPRESSED;
         }
     }
 }

@@ -29,7 +29,15 @@ public class ParquetToElasticIndexer {
 
         List<java.nio.file.Path> parquetFiles = new ArrayList<>();
         try (Stream<java.nio.file.Path> stream = Files.walk(Paths.get(parquetDir))) {
-            stream.filter(p -> p.toString().endsWith(".parquet")).forEach(parquetFiles::add);
+            stream.filter(p -> p.toString().endsWith(".parquet"))
+                    .filter(p -> {
+                        try {
+                            return Files.size(p) > 0;
+                        } catch (IOException e) {
+                            return false;
+                        }
+                    })
+                    .forEach(parquetFiles::add);
         }
 
         if (parquetFiles.isEmpty()) {
@@ -41,7 +49,12 @@ public class ParquetToElasticIndexer {
         HttpClient client = HttpClient.newHttpClient();
 
         for (java.nio.file.Path file : parquetFiles) {
-            indexFile(file, client, mapper, esUrl, index, batchSize);
+            try {
+                indexFile(file, client, mapper, esUrl, index, batchSize);
+            } catch (RuntimeException e) {
+                System.err.println("Skipping invalid parquet file: " + file
+                        + " | " + e.getMessage());
+            }
         }
     }
 
@@ -78,6 +91,10 @@ public class ParquetToElasticIndexer {
                     bulkLines.clear();
                 }
             }
+        } catch (RuntimeException e) {
+            System.err.println("Skipping invalid parquet file: " + file
+                    + " | " + e.getMessage());
+            return;
         }
 
         if (!bulkLines.isEmpty()) {

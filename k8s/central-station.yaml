@@ -26,9 +26,15 @@ spec:
               value: "/data/bitcask"
             - name: PARQUET_DIR
               value: "/data/parquet"
+            - name: PARQUET_CODEC
+              value: "UNCOMPRESSED"
+            - name: DROP_PARQUET_CODEC
+              value: "UNCOMPRESSED"
           volumeMounts:
             - name: weather-storage
               mountPath: /data
+            - name: jfr-storage
+              mountPath: /data/jfr
           resources:
             requests:
               memory: "512Mi"
@@ -38,6 +44,8 @@ spec:
         - name: weather-storage
           persistentVolumeClaim:
             claimName: weather-pvc
+        - name: jfr-storage
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service

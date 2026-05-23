@@ -17,6 +17,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -34,6 +35,7 @@ public class DropParquetArchiver {
     private static final int DEFAULT_QUEUE_CAPACITY = Integer.parseInt(
             System.getenv().getOrDefault("DROP_PARQUET_QUEUE_CAPACITY", "50000"));
     private static final String BASE_DIR;
+    private static final CompressionCodecName DEFAULT_CODEC = resolveCodec();
 
     static {
         BASE_DIR = System.getenv().getOrDefault("DROP_PARQUET_DIR", "/data/parquet_drops");
@@ -193,7 +195,7 @@ public class DropParquetArchiver {
                 .<GenericRecord>builder(path)
                 .withSchema(schema)
                 .withConf(conf)
-                .withCompressionCodec(CompressionCodecName.SNAPPY)
+                .withCompressionCodec(DEFAULT_CODEC)
                 .build()) {
 
             for (DropEvent e : records) {
@@ -207,5 +209,13 @@ public class DropParquetArchiver {
             }
         }
     }
-}
 
+    private static CompressionCodecName resolveCodec() {
+        String raw = System.getenv().getOrDefault("DROP_PARQUET_CODEC", "UNCOMPRESSED");
+        try {
+            return CompressionCodecName.valueOf(raw.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            return CompressionCodecName.UNCOMPRESSED;
+        }
+    }
+}
