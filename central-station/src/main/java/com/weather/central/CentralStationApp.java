@@ -1,5 +1,6 @@
 package com.weather.central;
 
+import com.weather.central.archiver.DropParquetArchiver;
 import com.weather.central.archiver.ParquetArchiver;
 import com.weather.central.bitcask.BitCask;
 import com.weather.central.bitcask.BitCaskController;
@@ -46,12 +47,18 @@ public class CentralStationApp {
         return new ParquetArchiver(parquetDir);
     }
 
+    @Bean
+    public DropParquetArchiver dropParquetArchiver() {
+        return new DropParquetArchiver();
+    }
+
     // WeatherConsumer gets BitCask + ParquetArchiver injected via parameters
     @Bean
     public WeatherConsumer weatherConsumer(BitCask bitCask,
-                                           ParquetArchiver archiver) {
+                                           ParquetArchiver archiver,
+                                           DropParquetArchiver dropArchiver) {
         System.out.println("Kafka bootstrap: " + kafkaBootstrap);
-        weatherConsumer = new WeatherConsumer(bitCask, archiver, kafkaBootstrap);
+        weatherConsumer = new WeatherConsumer(bitCask, archiver, dropArchiver, kafkaBootstrap);
         weatherConsumer.start();
         return weatherConsumer;
     }
