@@ -1,0 +1,31 @@
+docker compose up  #in /kafka
+docker exec -it kafka /bin/bash 
+kafka-topics.sh --create --topic=weather-readings --partitions=1 --replication-factor=1 --zookeeper=zookeeper:2181
+kafka-topics.sh --create --topic=rain-alerts --partitions=1 --replication-factor=1 --zookeeper=zookeeper:2181
+
+cd ~/weather-monitoring/central-station
+mvn clean package -DskipTests        
+echo "Exit code: $?"                          
+
+
+cd ~/weather-monitoring/central-station
+KAFKA_BOOTSTRAP=localhost:9092 \     
+BITCASK_DIR=$HOME/weather-monitoring/bitcask \
+PARQUET_DIR=$HOME/weather-monitoring/parquet \
+java -Djava.security.manager=allow \
+     -Dhadoop.home.dir=/tmp \
+     -jar target/central-station-1.0-SNAPSHOT.jar
+     
+     
+  
+     
+docker exec -it kafka kafka-console-consumer.sh \                       
+  --bootstrap-server localhost:9092 \
+  --topic weather-readings \
+  --from-beginning
+  
+  
+  docker exec -it kafka kafka-console-consumer.sh \ 
+  --bootstrap-server localhost:9092 \
+  --topic weather-montitoring \     
+  --from-beginning
