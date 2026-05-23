@@ -2,12 +2,13 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: weather-pv
-  namespace: weather-monitoring
+  # namespace removed: PVs are cluster-scoped
 spec:
   capacity:
     storage: 5Gi
   accessModes:
     - ReadWriteMany
+  storageClassName: weather-storage
   hostPath:
     path: /data/weather
 ---
@@ -19,6 +20,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteMany
+  storageClassName: weather-storage
   resources:
     requests:
       storage: 5Gi

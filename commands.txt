@@ -5,7 +5,7 @@ kafka-topics.sh --create --topic=rain-alerts --partitions=1 --replication-factor
 
 cd ~/weather-monitoring/central-station
 mvn clean package -DskipTests        
-echo "Exit code: $?"                          
+echo "Exit code: $?"
 
 
 cd ~/weather-monitoring/central-station
